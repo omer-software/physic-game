@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usta Karim'in Sırrı</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0520;
+  --panel: #160a2e;
+  --border: #5a2d8a;
+  --gold: #f5c842;
+  --green: #3dffaa;
+  --red: #ff4f6e;
+  --text: #e8d5ff;
+  --muted: #8a72aa;
+  --pixel: 'Press Start 2P', monospace;
+  --vt: 'VT323', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); min-height: 100vh; font-family: var(--pixel); color: var(--text); }
+
+#app { max-width: 680px; margin: 0 auto; padding: 14px 12px 30px; }
+
+/* HEADER */
+#header { text-align: center; margin-bottom: 14px; }
+#header h1 { font-size: 9px; color: var(--gold); text-shadow: 0 2px 0 #7a5000, 0 4px 12px #f5c84244; line-height: 2.2; letter-spacing: 1px; }
+#header p  { font-size: 6px; color: var(--muted); margin-top: 2px; }
+
+/* STORY */
+#story {
+  background: linear-gradient(135deg, #1c0a38, #120524);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px 8px;
+  margin-bottom: 12px;
+  position: relative;
+}
+#story::before { content: '📜'; position: absolute; top: -10px; left: 10px; font-size: 18px; }
+#story-text { font-family: var(--vt); font-size: 18px; color: #f0dfa0; line-height: 1.55; min-height: 38px; }
+#story-who  { font-size: 5.5px; color: var(--muted); margin-top: 5px; }
+
+/* PHASE TABS */
+#tabs { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; margin-bottom: 12px; }
+.tab {
+  background: #1a0835;
+  border: 2px solid #3a1860;
+  color: var(--muted);
+  font-family: var(--pixel);
+  font-size: 5px;
+  padding: 7px 2px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 2;
+  border-radius: 3px;
+  transition: background .12s;
+}
+.tab.active { background: #3d1a70; border-color: var(--gold); color: var(--gold); }
+.tab.done   { border-color: #2daa70; color: #2daa70; }
+.tab.locked { opacity: .4; cursor: not-allowed; }
+.tab:not(.locked):not(.active):hover { background: #2a1050; }
+
+/* CANVAS */
+#canvas-wrap {
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #08021a;
+  display: block;
+}
+canvas { display: block; width: 100%; }
+
+/* CONTROLS — always stacked vertically */
+#controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+.panel {
+  background: #120828;
+  border: 2px solid #3a1860;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+.panel-title {
+  font-size: 5.5px;
+  color: var(--gold);
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #3a1860;
+  letter-spacing: .5px;
+}
+
+/* SLIDER */
+.slider-row { display: flex; flex-direction: column; gap: 5px; }
+.slider-meta { display: flex; justify-content: space-between; font-size: 5.5px; }
+.slider-meta .lbl { color: var(--muted); }
+.slider-meta .val { color: var(--gold); font-size: 7px; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; background: #2a1050;
+  border: 1px solid #5a2d8a; border-radius: 3px; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--gold); border: 2px solid #a07820; border-radius: 2px; cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--gold); border: 2px solid #a07820; border-radius: 2px; cursor: pointer;
+}
+
+/* CHOICE BUTTONS */
+.choice-grid { display: flex; flex-direction: column; gap: 5px; }
+.choice-btn {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #1a0835; border: 2px solid #3a1860; border-radius: 3px;
+  color: #c0a8e8; font-family: var(--vt); font-size: 18px;
+  padding: 8px 12px; cursor: pointer; width: 100%; text-align: left;
+  transition: background .1s, border-color .1s;
+}
+.choice-btn .ch-name { font-size: 18px; }
+.choice-btn .ch-val  { font-size: 14px; color: #7a6090; font-family: var(--pixel); font-size: 6px; }
+.choice-btn:hover    { background: #2a1055; border-color: #7a4aaa; }
+.choice-btn.sel      { background: #3a1870; border-color: var(--gold); color: var(--gold); }
+.choice-btn.sel .ch-val { color: #b8950a; }
+
+/* RESULTS */
+#results {
+  background: #051510;
+  border: 2px solid #1a5c3a;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+.res-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 5.5px; }
+.res-row .rl { color: #4a8c6a; }
+.res-row .rv { font-size: 9px; color: var(--green); font-family: var(--pixel); }
+#verdict {
+  font-family: var(--vt); font-size: 20px; text-align: center;
+  border-top: 1px solid #1a5c3a; padding-top: 6px; margin-top: 4px;
+}
+
+/* FORMULA */
+#formula-panel {
+  background: #120900;
+  border: 2px solid #7a5000;
+  border-radius: 4px;
+  padding: 9px 12px;
+}
+#formula-text { font-family: var(--vt); font-size: 19px; color: var(--gold); line-height: 1.65; }
+
+/* QUIZ */
+#quiz-panel {
+  background: #0d0620;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
+  display: none;
+}
+#quiz-q  { font-family: var(--vt); font-size: 20px; color: #f0dfa0; line-height: 1.5; margin-bottom: 10px; }
+.q-opt {
+  display: block; width: 100%;
+  background: #1a0835; border: 2px solid #3a1860; border-radius: 3px;
+  color: #c0a8e8; font-family: var(--vt); font-size: 18px;
+  padding: 7px 10px; cursor: pointer; text-align: left; margin-bottom: 4px;
+  transition: background .1s;
+}
+.q-opt:hover          { background: #2a1055; border-color: #7a4aaa; }
+.q-opt.correct        { background: #052818; border-color: var(--green); color: var(--green); }
+.q-opt.wrong          { background: #2a0510; border-color: var(--red);   color: var(--red);   }
+#quiz-fb { font-family: var(--vt); font-size: 18px; color: var(--gold); margin-top: 6px; min-height: 22px; line-height: 1.4; }
+#next-btn {
+  display: none; width: 100%; margin-top: 8px;
+  background: #3d1a70; border: 2px solid var(--gold); border-radius: 3px;
+  color: var(--gold); font-family: var(--pixel); font-size: 6px;
+  padding: 9px; cursor: pointer;
+}
+#next-btn:hover { background: #5a2d9a; }
+
+/* STARS */
+#stars { display: flex; justify-content: center; gap: 10px; padding: 8px 0; font-size: 22px; }
+.star { opacity: .18; transition: opacity .4s, transform .4s; display: inline-block; }
+.star.lit { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 6px #f5c842); }
+
+/* COMPLETE */
+#complete {
+  display: none; text-align: center;
+  background: #051510; border: 3px solid var(--gold); border-radius: 6px;
+  padding: 18px; margin-top: 8px;
+}
+#complete p { font-family: var(--vt); font-size: 20px; color: var(--gold); line-height: 2; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="header">
+    <h1>⚗️ USTA KARİM'İN SIRRI ⚗️</h1>
+    <p>Kaldırma Kuvveti · Fizik 9. Sınıf · Etkileşimli Deney</p>
+  </div>
+
+  <div id="story">
+    <div id="story-text">…</div>
+    <div id="story-who">— Usta Karim, İskenderiye Limanı, M.S. 320</div>
+  </div>
+
+  <div id="tabs">
+    <button class="tab active" id="tab0" onclick="goPhase(0)">1<br>HACİM</button>
+    <button class="tab locked" id="tab1" onclick="goPhase(1)">2<br>YOĞUNLUK</button>
+    <button class="tab locked" id="tab2" onclick="goPhase(2)">3<br>SIVI</button>
+    <button class="tab locked" id="tab3" onclick="goPhase(3)">4<br>SINAV</button>
+  </div>
+
+  <div id="canvas-wrap"><canvas id="c" width="656" height="280"></canvas></div>
+
+  <div id="controls"><!-- injected by JS --></div>
+
+  <div id="results">
+    <div class="res-row"><span class="rl">Cisim ağırlığı  W</span><span class="rv" id="rW">—</span></div>
+    <div class="res-row"><span class="rl">Kaldırma kuvveti  Fk</span><span class="rv" id="rFk">—</span></div>
+    <div class="res-row"><span class="rl">Durum</span><span id="rSt">—</span></div>
+    <div id="verdict"></div>
+  </div>
+
+  <div id="formula-panel"><div id="formula-text">Fk = ρ · V · g</div></div>
+
+  <div id="quiz-panel">
+    <div id="quiz-q"></div>
+    <div id="quiz-opts"></div>
+    <div id="quiz-fb"></div>
+    <button id="next-btn">DEVAM ›</button>
+  </div>
+
+  <div id="stars">
+    <span class="star" id="s0">⭐</span>
+    <span class="star" id="s1">⭐</span>
+    <span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span>
+  </div>
+
+  <div id="complete">
+    <p>🏺 USTA KARİM KONUŞUYOR:<br><br>
+    "Genç kaşif, sırrı çözdün!<br>
+    Kaldırma kuvveti; sıvının yoğunluğuna,<br>
+    cismin hacmine ve yerçekimine bağlıdır.<br>
+    Cisim kendi ağırlığından fazla sıvı iterse — YÜZER!"<br><br>
+    ✨  Fk = ρ_sıvı · V_batan · g  ✨</p>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* ── DATA ────────────────────────────────────────────── */
+const STORIES = [
+  "Genç kaşif! Hesaplarım tutmuyor. Hacim büyüdükçe kaldırma kuvveti nasıl değişiyor? Kaydırıcıyı oynayarak keşfet!",
+  "Çok iyi! Şimdi farklı cisimler var önünde — tahta, parafin, beton, demir. Hangisi yüzer, hangisi batar?",
+  "Muhteşem! Peki sıvıyı değiştirirsek? Tatlı su, deniz suyu, zeytinyağı, cıva — kaldırma kuvveti değişir mi?",
+  "Artık tüm sırları biliyorsun. Son sınav — soruları doğru cevapla ve diplomanı al!"
+];
+
+const OBJS = [
+  { name:'🪵 Tahta',    d:600,   col:'#7a5010' },
+  { name:'🛢 Parafin',  d:870,   col:'#e8d080' },
+  { name:'🧱 Beton',    d:1800,  col:'#909090' },
+  { name:'⚙️ Demir',   d:7800,  col:'#506070' },
+];
+const LIQS = [
+  { name:'💧 Tatlı Su',   d:1000,  col:'#3377ee', a:.5  },
+  { name:'🌊 Deniz Suyu', d:1025,  col:'#1144bb', a:.58 },
+  { name:'🫙 Zeytinyağı', d:900,   col:'#bbaa00', a:.48 },
+  { name:'☄️ Cıva',       d:13600, col:'#999aaa', a:.75 },
+];
+
+const QUIZZES = [
+  null, null, null,
+  {
+    steps: [
+      { q:'Fk = ρ·V·g formülünde ρ neyin yoğunluğudur?',
+        opts:['Cismin','Sıvının','Havanın','Yer çekiminin'],
+        ok:1, fb:'✓ Doğru! ρ = sıvının yoğunluğu.' },
+      { q:'Hacim 2 katına çıkarsa Fk nasıl değişir?',
+        opts:['2 kat artar','4 kat artar','Yarıya düşer','Değişmez'],
+        ok:0, fb:'✓ Süper! V 2x olursa Fk de 2x olur.' },
+      { q:'Hangi cisim daha büyük kaldırma kuvveti alır?',
+        opts:['Küçük-hafif cisim','Büyük-ağır cisim','Aynı hacimde her zaman eşit','Sıvı yoğunluğuna bakar'],
+        ok:2, fb:'✓ Evet! Aynı hacim → aynı Fk (sıvı aynıysa).' },
+    ]
+  }
+];
+
+/* ── STATE ───────────────────────────────────────────── */
+let phase = 0, selObj = 0, selLiq = 0, vol = 4, starsEarned = 0;
+let quizIdx = 0, quizLocked = false;
+
+/* ── PHYSICS ─────────────────────────────────────────── */
+function getDLiq() { return phase === 2 ? LIQS[selLiq].d : 1000; }
+function getDObj() { return phase === 1 ? OBJS[selObj].d : phase === 2 ? 870 : 800; }
+function getVol()  { return (phase === 1 || phase === 2) ? 5 : vol; }
+function fk()      { return +(getDLiq() * getVol() * 9.8 / 1000).toFixed(1); }
+function W()       { return +(getDObj() * getVol() * 9.8 / 1000).toFixed(1); }
+function floats()  { return getDObj() <= getDLiq(); }
+
+/* ── PHASE ───────────────────────────────────────────── */
+function goPhase(p) {
+  if (p > starsEarned) return;
+  phase = p; selObj = 0; selLiq = 0; vol = 4; quizIdx = 0; quizLocked = false;
+  document.getElementById('story-text').textContent = STORIES[p];
+  for (let i = 0; i < 4; i++) {
+    const t = document.getElementById('tab'+i);
+    t.className = 'tab' + (i===p?' active':(i<starsEarned?' done':' locked'));
+  }
+  buildControls();
+  updateResults();
+  draw();
+  document.getElementById('quiz-panel').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  if (p === 3) showQuiz();
+}
+
+/* ── CONTROLS ────────────────────────────────────────── */
+function buildControls() {
+  const wrap = document.getElementById('controls');
+  wrap.innerHTML = '';
+
+  if (phase === 0) {
+    const p = makePanel('🔬 HACİM DENEYİ');
+    p.innerHTML += `
+      <div class="slider-row">
+        <div class="slider-meta">
+          <span class="lbl">Cisim Hacmi</span>
+          <span class="val" id="vol-val">${vol} dm³</span>
+        </div>
+        <input type="range" min="1" max="12" value="${vol}" id="vol-sl">
+      </div>`;
+    wrap.appendChild(p);
+    document.getElementById('vol-sl').addEventListener('input', function() {
+      vol = +this.value;
+      document.getElementById('vol-val').textContent = vol + ' dm³';
+      updateResults(); draw();
+    });
+    document.getElementById('formula-text').innerHTML =
+      'Fk = ρ · <span style="color:#ffee55">V</span> · g<br>Hacim artar → Fk artar!';
+  }
+
+  if (phase === 1) {
+    const p = makePanel('📦 CİSİM SEÇ');
+    const g = document.createElement('div');
+    g.className = 'choice-grid';
+    OBJS.forEach((o, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn' + (i===selObj?' sel':'');
+      btn.innerHTML = `<span class="ch-name">${o.name}</span><span class="ch-val">${o.d} kg/m³</span>`;
+      btn.addEventListener('click', () => {
+        selObj = i;
+        wrap.querySelectorAll('.choice-btn').forEach((b,j) => b.classList.toggle('sel', j===i));
+        updateResults(); draw();
+      });
+      g.appendChild(btn);
+    });
+    p.appendChild(g);
+    wrap.appendChild(p);
+    document.getElementById('formula-text').innerHTML =
+      'Fk = ρ · V · g  (sabit kalır!)<br>Cisim yoğunluğu sadece<br>batıp batmamayı etkiler.';
+  }
+
+  if (phase === 2) {
+    const p = makePanel('🫙 SIVI SEÇ');
+    const g = document.createElement('div');
+    g.className = 'choice-grid';
+    LIQS.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn' + (i===selLiq?' sel':'');
+      btn.innerHTML = `<span class="ch-name">${l.name}</span><span class="ch-val">${l.d} kg/m³</span>`;
+      btn.addEventListener('click', () => {
+        selLiq = i;
+        wrap.querySelectorAll('.choice-btn').forEach((b,j) => b.classList.toggle('sel', j===i));
+        updateResults(); draw();
+      });
+      g.appendChild(btn);
+    });
+    p.appendChild(g);
+    wrap.appendChild(p);
+    document.getElementById('formula-text').innerHTML =
+      'Fk = <span style="color:#ffee55">ρ_sıvı</span> · V · g<br>Sıvı yoğunluğu artar → Fk artar!';
+  }
+
+  if (phase === 3) {
+    document.getElementById('formula-text').innerHTML =
+      'Fk = ρ · V · g<br>✨ Artık sırrı biliyorsun!';
+  }
+}
+
+function makePanel(title) {
+  const p = document.createElement('div');
+  p.className = 'panel';
+  const t = document.createElement('div');
+  t.className = 'panel-title';
+  t.textContent = title;
+  p.appendChild(t);
+  return p;
+}
+
+/* ── RESULTS ─────────────────────────────────────────── */
+function updateResults() {
+  if (phase === 3) {
+    document.getElementById('rW').textContent = '—';
+    document.getElementById('rFk').textContent = '—';
+    document.getElementById('rSt').textContent = '—';
+    document.getElementById('verdict').textContent = '';
+    return;
+  }
+  document.getElementById('rW').textContent  = W()  + ' N';
+  document.getElementById('rFk').textContent = fk() + ' N';
+  const fl = floats();
+  document.getElementById('rSt').innerHTML =
+    fl ? '<span style="color:var(--green)">🟢 YÜZER</span>'
+       : '<span style="color:var(--red)">🔴 BATAR</span>';
+  const vd = document.getElementById('verdict');
+  vd.style.color = fl ? 'var(--green)' : 'var(--red)';
+  vd.textContent = fl ? '↑  Fk > W  →  YÜZER!' : '↓  W > Fk  →  BATAR!';
+}
+
+/* ── QUIZ ────────────────────────────────────────────── */
+function showQuiz() {
+  const qp = document.getElementById('quiz-panel');
+  qp.style.display = 'block';
+  quizLocked = false;
+  const step = QUIZZES[3].steps[quizIdx];
+  document.getElementById('quiz-q').textContent = step.q;
+  document.getElementById('quiz-fb').textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+  const wrap = document.getElementById('quiz-opts');
+  wrap.innerHTML = '';
+  step.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-opt';
+    btn.textContent = String.fromCharCode(65+i) + ')  ' + opt;
+    btn.addEventListener('click', () => {
+      if (quizLocked) return;
+      quizLocked = true;
+      wrap.querySelectorAll('.q-opt').forEach(b => b.disabled = true);
+      const ok = i === step.ok;
+      btn.classList.add(ok ? 'correct' : 'wrong');
+      wrap.querySelectorAll('.q-opt')[step.ok].classList.add('correct');
+      document.getElementById('quiz-fb').textContent = ok ? step.fb : '✗  ' + step.fb;
+      if (ok) {
+        quizIdx++;
+        if (quizIdx < QUIZZES[3].steps.length) {
+          const nb = document.getElementById('next-btn');
+          nb.textContent = 'SONRAKİ SORU ›';
+          nb.style.display = 'block';
+          nb.onclick = () => { quizIdx > 0 && showQuiz(); };
+        } else {
+          earnStar(3);
+          const nb = document.getElementById('next-btn');
+          nb.textContent = '🏺 DİPLOMAYI AL!';
+          nb.style.display = 'block';
+          nb.onclick = showComplete;
+        }
+      }
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function earnStar(p) {
+  if (starsEarned <= p) starsEarned = p + 1;
+  document.getElementById('s'+p).classList.add('lit');
+}
+
+function nextPhase() { if (phase < 3) goPhase(phase + 1); }
+
+function showComplete() {
+  document.getElementById('complete').style.display = 'block';
+  document.getElementById('complete').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ── CANVAS ─────────────────────────────────────────── */
+const canvas = document.getElementById('c');
+const cx = canvas.getContext('2d');
+
+function draw() {
+  const CW = canvas.width, CH = canvas.height;
+  cx.clearRect(0, 0, CW, CH);
+
+  // bg
+  cx.fillStyle = '#08021a'; cx.fillRect(0, 0, CW, CH);
+  drawPixelGrid(CW, CH);
+
+  // scene dimensions
+  const tankX = 60, tankW = 380, tankY = 30, tankH = 220;
+  const liqTop = tankY + 30;
+  const floorY = tankY + tankH - 10;
+  const liqH   = floorY - liqTop;
+
+  drawTank(tankX, tankY, tankW, tankH, liqTop, liqH);
+  drawObjectInTank(tankX, tankW, liqTop, liqH, floorY);
+  drawUsta(CW - 130, 30);
+  drawInfo(tankX, tankY + tankH + 10, tankW);
+}
+
+function drawPixelGrid(W, H) {
+  cx.strokeStyle = 'rgba(60,20,100,.1)'; cx.lineWidth = 1;
+  for (let x=0;x<W;x+=20){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+  for (let y=0;y<H;y+=20){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+}
+
+function drawTank(tx, ty, tw, th, lt, lh) {
+  // liquid
+  let lc = '#3377ee', la = .5;
+  if (phase === 2) { lc = LIQS[selLiq].col; la = LIQS[selLiq].a; }
+  cx.save(); cx.globalAlpha = la;
+  cx.fillStyle = lc; cx.fillRect(tx+3, lt, tw-6, lh);
+  cx.restore();
+  // shimmer
+  cx.fillStyle = 'rgba(255,255,255,.25)';
+  for (let x=tx+4; x<tx+tw-4; x+=10) cx.fillRect(x, lt, 5, 2);
+  // tank walls
+  cx.strokeStyle = '#7a3aaa'; cx.lineWidth = 3;
+  cx.strokeRect(tx, ty, tw, th);
+  // floor
+  cx.fillStyle = '#3a1860'; cx.fillRect(tx, ty+th-8, tw, 8);
+}
+
+function drawObjectInTank(tx, tw, lt, lh, fy) {
+  const v = getVol();
+  const sz = Math.min(20 + v*7, 110);
+  const fl = floats();
+  let objY;
+  if (fl) {
+    const sr = Math.min(getDObj()/getDLiq(), 1);
+    objY = lt - sz + sz * sr;
+  } else {
+    objY = fy - sz;
+  }
+  const objX = tx + tw/2 - sz/2;
+
+  let col = '#7a5010';
+  if (phase===1) col = OBJS[selObj].col;
+  if (phase===2) col = OBJS[0].col;
+
+  drawPixelBlock(objX, objY, sz, col);
+
+  // bubbles when sinking
+  if (!fl) {
+    cx.fillStyle = 'rgba(160,210,255,.6)';
+    for (let b=0;b<4;b++) {
+      cx.beginPath();
+      cx.arc(objX+sz/2 + (b-1.5)*10, objY - 4 - b*7, 2+b*.8, 0, Math.PI*2);
+      cx.fill();
+    }
+  }
+
+  // force arrows
+  const mx = objX + sz/2;
+  const fkLen = Math.min(fk()*1.2, 70);
+  const wLen  = Math.min(W()*1.2,  70);
+  // Fk up
+  drawArrow(mx, objY, mx, objY - fkLen, '#3dffaa');
+  cx.fillStyle = '#3dffaa'; cx.font = 'bold 9px "Press Start 2P"';
+  cx.fillText('Fk', mx+5, objY - fkLen/2 - 2);
+  // W down
+  drawArrow(mx, objY+sz, mx, objY+sz+wLen, '#ff4f6e');
+  cx.fillStyle = '#ff4f6e'; cx.font = 'bold 9px "Press Start 2P"';
+  cx.fillText('W', mx+5, objY+sz+wLen/2+10);
+}
+
+function drawPixelBlock(x, y, s, col) {
+  cx.fillStyle = col; cx.fillRect(x, y, s, s);
+  const px = Math.max(3, Math.floor(s/14))*2;
+  // highlight
+  try {
+    cx.fillStyle = lighten(col, 50);
+    for (let i=0;i<s;i+=px*2) { cx.fillRect(x+i,y,px,px); cx.fillRect(x,y+i,px,px); }
+    cx.fillStyle = darken(col, 40);
+    for (let i=0;i<s;i+=px*2) { cx.fillRect(x+i,y+s-px,px,px); cx.fillRect(x+s-px,y+i,px,px); }
+  } catch(e) {}
+  cx.strokeStyle = 'rgba(0,0,0,.6)'; cx.lineWidth = 2; cx.strokeRect(x, y, s, s);
+}
+
+function drawArrow(x1,y1,x2,y2,col) {
+  const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy);
+  if (len < 4) return;
+  cx.strokeStyle = col; cx.lineWidth = 2.5; cx.fillStyle = col;
+  cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+  const ux=dx/len, uy=dy/len;
+  cx.beginPath(); cx.moveTo(x2,y2);
+  cx.lineTo(x2-ux*8+uy*5, y2-uy*8-ux*5);
+  cx.lineTo(x2-ux*8-uy*5, y2-uy*8+ux*5);
+  cx.closePath(); cx.fill();
+}
+
+function drawInfo(tx, y, tw) {
+  cx.font = '8px "Press Start 2P"';
+  cx.fillStyle = 'rgba(130,100,180,.7)';
+  if (phase !== 3) {
+    cx.fillText('ρ_sıvı = ' + getDLiq() + ' kg/m³', tx+4, y+14);
+    cx.fillText('V = ' + getVol() + ' dm³', tx+4, y+28);
+  }
+}
+
+function drawUsta(x, y) {
+  const p=9;
+  // head
+  cx.fillStyle='#e8c090'; cx.fillRect(x+p,y-2*p,p,p);
+  // hat
+  cx.fillStyle='#8b3a10'; cx.fillRect(x+p-2,y-3*p,p+4,7);
+  cx.fillStyle='#aa4a14'; cx.fillRect(x+p-5,y-3*p+4,p+10,3);
+  // robe
+  cx.fillStyle='#5a2090'; cx.fillRect(x,y-p,3*p,2*p);
+  cx.fillStyle='#7a30b0'; cx.fillRect(x+p-2,y-p,p+4,2*p);
+  // legs
+  cx.fillStyle='#3a1260'; cx.fillRect(x+2,y+p,p-1,p); cx.fillRect(x+2*p,y+p,p-1,p);
+  // arms
+  cx.fillStyle='#e8c090'; cx.fillRect(x-p+2,y-p+3,p-2,6); cx.fillRect(x+3*p,y-p+3,p-2,6);
+  // staff
+  cx.fillStyle='#7a5010'; cx.fillRect(x-p+3,y-3*p,2,4*p+p);
+  cx.fillStyle='#f5c842'; cx.fillRect(x-p+1,y-3*p,6,3);
+  // label
+  cx.font='6px "Press Start 2P"'; cx.fillStyle='#f5c842';
+  cx.fillText('USTA',  x-2, y+2.5*p+12);
+  cx.fillText('KARİM', x-5, y+2.5*p+22);
+}
+
+function lighten(h,a){
+  try{const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgb(${Math.min(255,r+a)},${Math.min(255,g+a)},${Math.min(255,b+a)})`;}catch(e){return'#fff';}
+}
+function darken(h,a){
+  try{const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgb(${Math.max(0,r-a)},${Math.max(0,g-a)},${Math.max(0,b-a)})`;}catch(e){return'#000';}
+}
+
+/* ── QUIZ NEXT wiring ────────────────────────────────── */
+// Phase quiz unlock buttons
+function setupPhaseQuiz(p) {
+  const qdata = [
+    { q:'Hacim 2 katına çıkarsa Fk ne olur?', opts:['2 kat artar','Değişmez','Yarıya düşer','4 kat artar'], ok:0, fb:'✓ Doğru! Fk = ρVg → V 2x olursa Fk 2x olur.' },
+    { q:'Aynı hacimdeki tahta ve demir suya atılıyor. Kaldırma kuvvetleri?', opts:['Demirde büyük','Tahtada büyük','Eşit','İkisi de sıfır'], ok:2, fb:'✓ Evet! Aynı hacim, aynı sıvı → aynı Fk.' },
+    { q:'Deniz suyu tatlı suya göre daha yoğun. Kaldırma kuvveti nasıl değişir?', opts:['Artar','Azalır','Değişmez','Cisime bağlı'], ok:0, fb:'✓ Doğru! ρ_sıvı artar → Fk artar.' },
+  ];
+  const qp = document.getElementById('quiz-panel');
+  qp.style.display = 'block';
+  quizLocked = false;
+  const step = qdata[p];
+  document.getElementById('quiz-q').textContent = step.q;
+  document.getElementById('quiz-fb').textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+  const wrap = document.getElementById('quiz-opts');
+  wrap.innerHTML = '';
+  step.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-opt';
+    btn.textContent = String.fromCharCode(65+i)+')  '+opt;
+    btn.addEventListener('click', () => {
+      if (quizLocked) return;
+      quizLocked = true;
+      wrap.querySelectorAll('.q-opt').forEach(b => b.disabled=true);
+      const ok = i === step.ok;
+      btn.classList.add(ok?'correct':'wrong');
+      wrap.querySelectorAll('.q-opt')[step.ok].classList.add('correct');
+      document.getElementById('quiz-fb').textContent = ok ? step.fb : '✗  '+step.fb;
+      if (ok) {
+        earnStar(p);
+        const nb = document.getElementById('next-btn');
+        nb.textContent = 'DEVAM ›';
+        nb.style.display = 'block';
+        nb.onclick = () => goPhase(p+1);
+      }
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* ── WIRE PHASE QUIZ TO EACH PHASE ──────────────────── */
+// Override goPhase to show quiz at end of phases 0,1,2
+const _goPhase = goPhase;
+// We need to attach quiz after controls are built
+// Patch: phases 0,1,2 show quiz via "DENEYI BİTİR" button
+function buildPhaseEndBtn(p) {
+  const wrap = document.getElementById('controls');
+  const btn = document.createElement('button');
+  btn.id = 'end-btn';
+  btn.style.cssText = 'display:block;width:100%;margin-top:4px;background:#3d1a70;border:2px solid var(--gold);border-radius:3px;color:var(--gold);font-family:var(--pixel);font-size:6px;padding:9px;cursor:pointer;';
+  btn.textContent = 'DEZENEYİ BİTİR — SORUYA GEÇ ›';
+  btn.onmouseover = ()=>btn.style.background='#5a2d9a';
+  btn.onmouseout  = ()=>btn.style.background='#3d1a70';
+  btn.onclick = () => { btn.remove(); setupPhaseQuiz(p); };
+  wrap.appendChild(btn);
+}
+
+// Re-init
+goPhase = function(p) {
+  if (p > starsEarned) return;
+  phase=p; selObj=0; selLiq=0; vol=4; quizIdx=0; quizLocked=false;
+  document.getElementById('story-text').textContent = STORIES[p];
+  for(let i=0;i<4;i++){
+    const t=document.getElementById('tab'+i);
+    t.className='tab'+(i===p?' active':(i<starsEarned?' done':' locked'));
+  }
+  document.getElementById('quiz-panel').style.display='none';
+  document.getElementById('next-btn').style.display='none';
+  buildControls();
+  updateResults();
+  draw();
+  if(p<3) buildPhaseEndBtn(p);
+  if(p===3) showQuiz();
+}
+
+/* ── BOOT ────────────────────────────────────────────── */
+goPhase(0);
+</script>
+</body>
+</html>
