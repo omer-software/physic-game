@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usta Karim'in Sırrı</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0e6ff; --panel:#ffffff; --border:#7c3aed;
+  --gold:#d97706; --green:#059669; --red:#dc2626;
+  --text:#1e1b4b; --muted:#6d28d9; --accent:#7c3aed;
+  --liqbg:#dbeafe; --canvasbg:#e0f2fe;
+  --pixel:'Press Start 2P',monospace;
+  --vt:'VT323',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);min-height:100vh;font-family:'Press Start 2P',monospace;color:var(--text);}
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg,#1e1b4b 0%,#4c1d95 50%,#1e1b4b 100%);
+  flex-direction:column; gap:20px; padding:20px;
+}
+#login-box {
+  background:#0f0820; border:3px solid #7c3aed; border-radius:8px;
+  padding:28px 32px; max-width:420px; width:100%; text-align:center;
+}
+#login-box h2 { font-size:8px; color:#f5c842; line-height:2.2; margin-bottom:6px; }
+#login-box .sub { font-family:'VT323',monospace; font-size:20px; color:#a78bfa; margin-bottom:20px; }
+.login-story {
+  font-family:'VT323',monospace; font-size:18px; color:#f0dfa0; line-height:1.7;
+  background:#1a0838; border:1px solid #4c1d95; border-radius:4px; padding:12px;
+  margin-bottom:20px; text-align:left;
+}
+.login-story strong { color:#f5c842; }
+.pw-row { display:flex; gap:8px; margin-bottom:12px; }
+#pw-input {
+  flex:1; background:#1a0838; border:2px solid #4c1d95; border-radius:4px;
+  color:#f0dfa0; font-family:'Press Start 2P',monospace; font-size:8px;
+  padding:10px 12px; outline:none;
+}
+#pw-input:focus { border-color:#7c3aed; }
+#pw-btn {
+  background:#4c1d95; border:2px solid #7c3aed; border-radius:4px;
+  color:#f5c842; font-family:'Press Start 2P',monospace; font-size:7px;
+  padding:10px 14px; cursor:pointer;
+}
+#pw-btn:hover { background:#6d28d9; }
+#pw-err { font-family:'VT323',monospace; font-size:18px; color:#ff4f6e; min-height:22px; }
+#save-status { font-size:5px; color:#6d28d9; margin-top:8px; }
+
+/* ── APP ── */
+#app { display:none; max-width:700px; margin:0 auto; padding:14px 12px 30px; }
+
+/* HEADER */
+#hdr { text-align:center; margin-bottom:14px; }
+#hdr h1 { font-size:8px; color:var(--accent); line-height:2.2; letter-spacing:1px; }
+#hdr p  { font-size:6px; color:var(--muted); margin-top:2px; }
+
+/* STORY BOX */
+#story {
+  background:#fff; border:2px solid var(--border); border-radius:6px;
+  padding:14px 16px 12px; margin-bottom:12px; position:relative;
+  box-shadow:4px 4px 0 #7c3aed33;
+}
+#story-ship {
+  font-family:'VT323',monospace; font-size:15px; color:#dc2626; font-weight:bold;
+  background:#fef2f2; border:1px solid #fca5a5; border-radius:4px;
+  padding:6px 10px; margin-bottom:8px; line-height:1.5;
+}
+#story-ship.ok { background:#f0fdf4; border-color:#86efac; color:#15803d; }
+#st { font-family:'VT323',monospace; font-size:19px; color:#1e1b4b; line-height:1.6; }
+#sw { font-size:5.5px; color:var(--muted); margin-top:6px; }
+
+/* KARIM SPEECH */
+#karim-bubble {
+  display:none; background:#fffbeb; border:2px solid #d97706; border-radius:6px;
+  padding:10px 12px; margin-top:10px; position:relative;
+}
+#karim-bubble::before {
+  content:'💬'; position:absolute; top:-12px; left:10px; font-size:18px;
+}
+#karim-text { font-family:'VT323',monospace; font-size:18px; color:#92400e; line-height:1.6; }
+
+/* TABS */
+#tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:12px; }
+.tab {
+  background:#ede9fe; border:2px solid #c4b5fd; color:#6d28d9;
+  font-family:'Press Start 2P',monospace; font-size:4.5px;
+  padding:7px 2px; cursor:pointer; text-align:center; line-height:2; border-radius:4px;
+  transition:background .12s;
+}
+.tab:hover { background:#ddd6fe; border-color:#7c3aed; }
+.tab.active { background:#7c3aed; border-color:#4c1d95; color:#fff; }
+.tab.done   { background:#d1fae5; border-color:#34d399; color:#065f46; }
+
+/* PROGRESS BAR */
+#progress-wrap { background:#e5e7eb; border-radius:99px; height:8px; margin-bottom:12px; overflow:hidden; border:1px solid #d1d5db; }
+#progress-bar  { height:100%; background:linear-gradient(90deg,#7c3aed,#6d28d9); border-radius:99px; transition:width .4s; }
+
+/* FORMULA PANEL */
+#fml-panel {
+  background:#fff; border:2px solid #c4b5fd; border-radius:6px;
+  padding:12px 14px; margin-bottom:12px; box-shadow:2px 2px 0 #c4b5fd;
+}
+#fml-panel .ftitle { font-size:5.5px; color:#6d28d9; margin-bottom:8px; border-bottom:1px solid #e5e7eb; padding-bottom:5px; }
+#fml-main { font-family:'VT323',monospace; font-size:22px; color:#1e1b4b; margin-bottom:8px; }
+.fml-vars { display:flex; flex-direction:column; gap:3px; }
+.fv { font-family:'VT323',monospace; font-size:17px; color:#374151; display:flex; gap:8px; align-items:baseline; }
+.fv-sym { color:#7c3aed; font-weight:bold; min-width:80px; display:inline-block; }
+.fv-desc { color:#6b7280; }
+.fv-val  { color:#d97706; font-weight:bold; margin-left:auto; }
+
+/* CANVAS */
+#cw { border:2px solid var(--border); border-radius:6px; overflow:hidden; margin-bottom:12px; background:#e0f2fe; box-shadow:3px 3px 0 #7c3aed33; }
+canvas { display:block; width:100%; }
+
+/* CONTROLS */
+#ctrl { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.panel { background:#fff; border:2px solid #e5e7eb; border-radius:6px; padding:10px 12px; box-shadow:2px 2px 0 #e5e7eb; }
+.ptitle { font-size:5.5px; color:#6d28d9; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid #f3f4f6; }
+
+/* SLIDER */
+.sr { display:flex; flex-direction:column; gap:6px; }
+.sm { display:flex; justify-content:space-between; font-size:5.5px; }
+.sm .lb { color:#6b7280; }
+.sm .vl { color:#7c3aed; font-size:7px; font-weight:bold; }
+input[type=range] {
+  -webkit-appearance:none; appearance:none; width:100%; height:8px;
+  background:#ede9fe; border:1px solid #c4b5fd; border-radius:4px; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:#7c3aed; border:2px solid #4c1d95; border-radius:3px; cursor:pointer; }
+input[type=range]::-moz-range-thumb { width:16px; height:16px; background:#7c3aed; border:2px solid #4c1d95; border-radius:3px; cursor:pointer; }
+
+/* CHOICE */
+.cg { display:flex; flex-direction:column; gap:5px; }
+.cb {
+  display:flex; justify-content:space-between; align-items:center;
+  background:#f9fafb; border:2px solid #e5e7eb; border-radius:4px;
+  color:#374151; font-family:'VT323',monospace; font-size:18px;
+  padding:8px 12px; cursor:pointer; width:100%; text-align:left; transition:all .1s;
+}
+.cb:hover { background:#ede9fe; border-color:#c4b5fd; }
+.cb.sel   { background:#ede9fe; border-color:#7c3aed; color:#4c1d95; }
+.cb .cn   { font-size:18px; }
+.cb .cv   { font-family:'Press Start 2P',monospace; font-size:6px; color:#9ca3af; }
+.cb.sel .cv { color:#6d28d9; }
+
+/* RESULTS */
+#res {
+  background:#fff; border:2px solid #34d399; border-radius:6px;
+  padding:10px 14px; margin-bottom:10px; box-shadow:2px 2px 0 #34d39933;
+}
+.rr { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:5.5px; }
+.rr .rl { color:#374151; }
+.rr .rv { font-size:10px; color:#059669; font-weight:bold; }
+#vd { font-family:'VT323',monospace; font-size:22px; text-align:center; border-top:1px solid #d1fae5; padding-top:7px; margin-top:5px; font-weight:bold; }
+
+/* QUIZ */
+#qpanel { background:#fff; border:2px solid var(--border); border-radius:6px; padding:12px 14px; display:none; }
+#qq { font-family:'VT323',monospace; font-size:21px; color:#1e1b4b; line-height:1.5; margin-bottom:10px; }
+.qo {
+  display:block; width:100%; background:#f9fafb; border:2px solid #e5e7eb; border-radius:4px;
+  color:#374151; font-family:'VT323',monospace; font-size:18px;
+  padding:8px 12px; cursor:pointer; text-align:left; margin-bottom:4px; transition:all .1s;
+}
+.qo:hover { background:#ede9fe; border-color:#c4b5fd; }
+.qo.ok    { background:#f0fdf4; border-color:#34d399; color:#065f46; }
+.qo.no    { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+#qfb { font-family:'VT323',monospace; font-size:18px; margin-top:8px; min-height:24px; line-height:1.5; }
+#qfb.good { color:#059669; }
+#qfb.bad  { color:#dc2626; }
+
+#nbtn {
+  display:none; width:100%; margin-top:10px; background:#7c3aed; border:2px solid #4c1d95;
+  border-radius:4px; color:#fff; font-family:'Press Start 2P',monospace; font-size:6px;
+  padding:10px; cursor:pointer;
+}
+#nbtn:hover { background:#6d28d9; }
+
+/* END PHASE BTN */
+#end-phase-btn {
+  display:none; width:100%; background:#d97706; border:2px solid #b45309;
+  border-radius:4px; color:#fff; font-family:'Press Start 2P',monospace; font-size:6px;
+  padding:10px; cursor:pointer; margin-top:4px;
+}
+#end-phase-btn:hover { background:#b45309; }
+
+/* STARS */
+#stars { display:flex; justify-content:center; gap:10px; padding:8px 0; font-size:24px; }
+.star { opacity:.2; transition:opacity .4s,transform .4s; display:inline-block; }
+.star.lit { opacity:1; transform:scale(1.15); filter:drop-shadow(0 0 6px #f5c842); }
+
+/* COMPLETE */
+#fin {
+  display:none; text-align:center; background:#fff; border:3px solid #f5c842;
+  border-radius:8px; padding:20px; margin-top:8px; box-shadow:4px 4px 0 #f5c84266;
+}
+#fin p { font-family:'VT323',monospace; font-size:21px; color:#92400e; line-height:2; }
+#replay-btn {
+  display:inline-block; margin-top:14px; background:#7c3aed; border:2px solid #4c1d95;
+  border-radius:4px; color:#fff; font-family:'Press Start 2P',monospace; font-size:6px;
+  padding:10px 18px; cursor:pointer;
+}
+#replay-btn:hover { background:#6d28d9; }
+
+/* PHASE INTRO */
+#phase-intro {
+  display:none; background:#fffbeb; border:2px solid #fcd34d; border-radius:6px;
+  padding:12px 14px; margin-bottom:10px;
+}
+#pi-title { font-size:6.5px; color:#92400e; margin-bottom:6px; }
+#pi-text  { font-family:'VT323',monospace; font-size:18px; color:#78350f; line-height:1.6; }
+#pi-goal  { font-size:5.5px; color:#b45309; margin-top:6px; padding-top:6px; border-top:1px solid #fde68a; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div id="login-box">
+    <h2>⚓ USTA KARİM'İN SIRRI ⚓</h2>
+    <div class="sub">Kaldırma Kuvveti Laboratuvarı</div>
+    <div class="login-story">
+      <strong>İskenderiye Limanı, M.S. 320</strong><br><br>
+      Deneyimli gemici Usta Karim'in en büyük gemisi İskenderiye'den Atina'ya değerli kumaş
+      taşıyacak. Ancak bir sorun var — gemi fazla yüklenmiş ve batıp batmayacağı belli değil.<br><br>
+      Karim seni çağırıyor: <strong>"Fizik bilgini kullan, gemimi kurtar!"</strong>
+    </div>
+    <div class="pw-row">
+      <input type="password" id="pw-input" placeholder="Şifre gir..." />
+      <button id="pw-btn" onclick="tryLogin()">GİR</button>
+    </div>
+    <div id="pw-err"></div>
+    <div id="save-status"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div id="hdr">
+    <h1>⚗️ USTA KARİM'İN SIRRI ⚗️</h1>
+    <p>Kaldırma Kuvveti · Fizik 9. Sınıf · Etkileşimli Deney</p>
+  </div>
+
+  <div id="story">
+    <div id="story-ship">🚢 GEMİ DURUMU: Hesaplanıyor...</div>
+    <div id="st"></div>
+    <div id="karim-bubble"><div id="karim-text"></div></div>
+    <div id="sw">— Usta Karim, İskenderiye Limanı, M.S. 320</div>
+  </div>
+
+  <div id="phase-intro">
+    <div id="pi-title"></div>
+    <div id="pi-text"></div>
+    <div id="pi-goal"></div>
+  </div>
+
+  <div id="tabs">
+    <button class="tab" id="t0">1<br>HACİM</button>
+    <button class="tab" id="t1">2<br>YOĞUNLUK</button>
+    <button class="tab" id="t2">3<br>SIVI</button>
+    <button class="tab" id="t3">4<br>SINAV</button>
+  </div>
+
+  <div id="progress-wrap"><div id="progress-bar" style="width:0%"></div></div>
+
+  <div id="fml-panel">
+    <div class="ftitle">📐 KALDIRMA KUVVETİ FORMÜLÜ</div>
+    <div id="fml-main">Fk = ρ_sıvı · V_batan · g</div>
+    <div class="fml-vars" id="fml-vars"></div>
+  </div>
+
+  <div id="cw"><canvas id="c" width="672" height="290"></canvas></div>
+
+  <div id="ctrl"></div>
+
+  <div id="res">
+    <div class="rr"><span class="rl">Cisim ağırlığı  W  =  m · g  =  ρ_cisim · V · g</span><span class="rv" id="rW">—</span></div>
+    <div class="rr"><span class="rl">Kaldırma kuvveti  Fk  =  ρ_sıvı · V_batan · g</span><span class="rv" id="rFk">—</span></div>
+    <div class="rr"><span class="rl">Durum</span><span id="rSt">—</span></div>
+    <div id="vd"></div>
+  </div>
+
+  <button id="end-phase-btn">⚓ DENEYİ TAMAMLA — SORUYA GEÇ ›</button>
+
+  <div id="qpanel">
+    <div id="qq"></div>
+    <div id="qopts"></div>
+    <div id="qfb"></div>
+    <button id="nbtn"></button>
+  </div>
+
+  <div id="stars">
+    <span class="star" id="s0">⭐</span>
+    <span class="star" id="s1">⭐</span>
+    <span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span>
+  </div>
+
+  <div id="fin">
+    <p>🏺 USTA KARİM'İN GEMİSİ KURTULDU!<br><br>
+    "Genç kaşif, yaptın! Sırrı çözdün!<br>
+    Kaldırma kuvveti; sıvının yoğunluğuna,<br>
+    cismin suya batan hacmine ve yerçekimine bağlıdır.<br><br>
+    Gemim artık güvende. Seni bir dahaki sefere de çağırırım!"<br><br>
+    ✨ Fk = ρ_sıvı · V_batan · g ✨</p>
+    <button id="replay-btn" onclick="replay()">🔄 YENİDEN OYNA</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════ DATA ══════════════════ */
+var PASSWORD = 'omer';
+var SAVE_KEY = 'karim_progress';
+
+var STORIES = [
+  "Karim titreyen sesle konuşuyor: \"Gemiye yüklenen sandıkların hacmi çok önemli. Eğer çok büyük hacimli yük yükleriz, gemi daha çok su iter. Bana kaldırma kuvvetinin hacimle ilişkisini kanıtla!\"",
+  "Karim derin bir nefes alır: \"Peki ya yük malzemesi? Demirden sandık mı, tahtadan sandık mı? Yoğunluk fark yaratır mı? Gemimin yükü için doğru malzemeyi bulmam gerek!\"",
+  "Karim harita üzerinde parmağını Atina'ya götürür: \"Boğaz geçişinde sular değişiyor — tatlı su, tuzlu su... Sıvı değişince kaldırma kuvveti de değişir mi? Bunu bilmem hayati!\"",
+  "Karim ellerini kavuşturur: \"Artık her şeyi deney yaptın. Şimdi son sınav — gemimi kurtarmak için bu soruları doğru cevapla!\""
+];
+
+var SHIP_STATUS = [
+  { ok:false, msg:"🚢 GEMİ TEHLİKEDE! Hacim denklemi bilinmiyor — GEMİ BATABILIR!" },
+  { ok:false, msg:"🚢 GEMİ TEHLİKEDE! Yük malzemesi belirsiz — BATMA RİSKİ VAR!" },
+  { ok:false, msg:"🚢 GEMİ TEHLİKEDE! Sıvı etkisi hesaplanmadı — GÜZERGAH RİSKLİ!" },
+  { ok:true,  msg:"🚢 GEMİ SINAV AŞAMASINDA! Son hesabı yap, denize açıl!" }
+];
+
+var PHASE_INTROS = [
+  {
+    title:"⚓ GÖREV 1 — HACİM ve KALDIRMA KUVVETİ",
+    text:"Usta Karim'in ambarına farklı büyüklükte ahşap sandıklar yükleniyor. Sandıkların hacmi büyüdükçe suyun içine daha fazla giriyor. Bu, suya basılan gücü — yani kaldırma kuvvetini — artırıyor mu?",
+    goal:"🎯 Kaydırıcıyı kullanarak hacmi değiştir. Fk değerinin nasıl değiştiğini gözlemle. Formüldeki V_batan değişkenini anlamaya çalış."
+  },
+  {
+    title:"⚓ GÖREV 2 — CİSİM YOĞUNLUĞU ve YÜZME KOŞULU",
+    text:"Karim farklı malzemelerden yapılmış sandıklar gösteriyor. Hepsinin hacmi aynı — ama bazıları batar, bazıları yüzer. Neden? Cismin kendi yoğunluğu kaldırma kuvvetini değil, yüzme koşulunu belirler!",
+    goal:"🎯 Dört cismi dene. Hangileri yüzer? Formüldeki ρ_cisim değerini W hesabında nasıl kullandığını gözlemle."
+  },
+  {
+    title:"⚓ GÖREV 3 — SIVI YOĞUNLUĞU ve GÜZERGAH",
+    text:"Gemi tatlı su kanalından denize çıkacak. Deniz suyu daha yoğun — bu yüzden kaldırma kuvveti değişiyor! Cıva gibi çok yoğun sıvılarda her şey yüzer. Zeytinyağında ise sular karışık...",
+    goal:"🎯 Dört sıvıyı dene. Fk nasıl değişiyor? Formüldeki ρ_sıvı'nın doğrudan Fk'yı etkilediğini gör."
+  },
+  {
+    title:"🎓 GÖREV 4 — USTA KARİM'İN FİNAL SINAVI",
+    text:"Tüm deneyleri tamamladın! Karim sana son üç soruyu soruyor. Bu soruları doğru cevaplarsan gemi Atina'ya yola çıkacak.",
+    goal:"🎯 Her soruyu dikkatlice oku. Yanlış cevap verirsen Karim seni uyaracak."
+  }
+];
+
+var OBJS = [
+  {name:'🪵 Tahta Sandık',  d:600,  col:'#7a5010', desc:'Hafif, su yüzeyinde kalır'},
+  {name:'🛢 Parafin Yük',   d:870,  col:'#c4a020', desc:'Neredeyse su yoğunluğunda'},
+  {name:'🧱 Taş Yük',       d:2500, col:'#707070', desc:'Ağır, dibe çöker'},
+  {name:'⚙️ Demir Sandık', d:7800, col:'#405060', desc:'Çok ağır, hızla batar'}
+];
+
+var LIQS = [
+  {name:'💧 Tatlı Su',    d:1000,  col:'#60a5fa', a:.55, desc:'Nehir, kanal suyu'},
+  {name:'🌊 Deniz Suyu',  d:1025,  col:'#2563eb', a:.60, desc:'Tuz nedeniyle daha yoğun'},
+  {name:'🫙 Zeytinyağı',  d:900,   col:'#ca8a04', a:.50, desc:'Tatlı sudan hafif'},
+  {name:'☄️ Cıva',        d:13600, col:'#94a3b8', a:.80, desc:'Olağanüstü yoğun metal'}
+];
+
+var PHASE_Q = [
+  {
+    q:'Karim soruyor: Ahşap sandığın hacmini 2 katına çıkardın. Kaldırma kuvveti ne oldu?',
+    opts:['2 kat arttı — çünkü Fk = ρ·V·g, V büyüyünce Fk büyür',
+          'Değişmedi — hacim kaldırma kuvvetini etkilemez',
+          '4 kat arttı — hacim karesel etkir',
+          'Azaldı — büyük cisimler daha az kaldırılır'],
+    ok:0,
+    good:'⚓ MÜKEMMEL! Gemi güvende! Fk = ρ·V·g formülünde V doğrudan çarpar — hacim 2x olursa Fk de 2x olur.',
+    bads:['Dikkat! V değişmedi mi gerçekten? Formüle bak: Fk = ρ · V · g — V büyüyünce Fk ne olur?',
+          'Karesel değil, doğrusal ilişki! V 2x olursa Fk de 2x olur, 4x değil.',
+          'Tersine! Büyük cisim daha çok su iter — kaldırma kuvveti ARTAR.']
+  },
+  {
+    q:'Karim soruyor: Aynı hacimdeki ahşap ve demir sandıkları suya attım. Kaldırma kuvvetleri nasıl?',
+    opts:['Eşit — ikisi de aynı hacimde, aynı sıvıda',
+          'Demir daha ağır, kaldırma kuvveti de büyük olmalı',
+          'Ahşap yüzer, yani kaldırma kuvveti daha büyük',
+          'Demir batar, kaldırma kuvveti sıfır olur'],
+    ok:0,
+    good:'⚓ KESİNLİKLE DOĞRU! Fk = ρ_sıvı · V · g — burada cismin yoğunluğu YOK! Kaldırma kuvveti sadece SIVIya ve HACMEbağlı. Demir de aynı Fk alır ama kendi ağırlığı daha büyük olduğu için BATAR.',
+    bads:['Yanlış! Kaldırma kuvvetinde cisim ağırlığı rol oynamaz. Fk = ρ_SIVI · V · g',
+          'Yüzmek ayrı, kaldırma kuvveti ayrı kavram! Aynı Fk — ama ahşap yüzer çünkü W < Fk.',
+          'Batan cisim de kaldırma kuvveti alır! Sadece W > Fk olduğu için batar.']
+  },
+  {
+    q:'Karim soruyor: Gemi tatlı su kanalından tuzlu denize geçti. Kaldırma kuvveti değişti mi?',
+    opts:['Arttı — deniz suyu daha yoğun, ρ_sıvı büyüdü, Fk büyüdü',
+          'Azaldı — tuzlu su gemiye ağırlık yapar',
+          'Değişmedi — sıvı tipi fark etmez',
+          'Gemi battı — tuzlu su daha ağır'],
+    ok:0,
+    good:'⚓ HAYDİ GEMİYİ DENİZE! Deniz suyu ρ=1025, tatlı su ρ=1000. Fk = ρ_SIVI · V · g — sıvı yoğunluğu arttı, Fk arttı! Bu yüzden gemiler denizde daha kolay yüzer.',
+    bads:['Sıvı tipi kesinlikle fark eder! Fk = ρ_SIVI · V · g — ρ_sıvı formülde doğrudan çarpılıyor.',
+          'Tuzlu suda Fk artar — bu yüzden denizde yüzmek daha kolay!',
+          'Gemi batmadı! Daha yoğun sıvı = daha büyük kaldırma kuvveti = DAHA KOLAY YÜZME.']
+  }
+];
+
+var FINAL_Q = [
+  {
+    q:'Formül: Fk = ρ_sıvı · V_batan · g\n\nV_batan (batan hacim) ne demektir?',
+    opts:['Cismin sıvı yüzeyi altında kalan hacmi',
+          'Cismin toplam hacmi her zaman',
+          'Sıvının hacmi',
+          'Cisim ile sıvı hacminin toplamı'],
+    ok:0,
+    good:'✓ Doğru! V_batan = cismin sıvıya DALAN kısmı. Cisim yarım batmışsa, V_batan toplam hacmin yarısı. Yüzen cisimde V_batan < V_toplam!',
+    bads:['Toplam hacim değil! Yüzen cisimde bir kısmı havada kalır — sadece suya batan kısım Fk üretir.',
+          "Sıvının hacmi değil! Fk, cismin sıvıya dalan kısmına göre hesaplanır.",
+          'İkisi toplanmaz! Sadece cismin suya giren kısmı (V_batan) formüle girer.']
+  },
+  {
+    q:'Bir cisim sıvıda yüzüyor. Yüzme koşulu nedir?',
+    opts:['ρ_cisim ≤ ρ_sıvı (cisim sıvıdan hafifse yüzer)',
+          'Fk = 0 olmalı',
+          'Cisim ne kadar ağır olursa o kadar iyi yüzer',
+          'Hacim büyüdükçe her cisim yüzer'],
+    ok:0,
+    good:'✓ Süper! ρ_cisim ≤ ρ_sıvı → yüzer. Bu yüzden demir (7800) tatlı suda (1000) batar, tahta (600) yüzer!',
+    bads:['Fk sıfır olsaydı hiçbir şey yüzemezdi! Fk > 0 ve Fk ≥ W olmalı.',
+          'Tam tersi! Ağır cisim batar — hafif (düşük yoğunluklu) cisim yüzer.',
+          'Değil! Küçük ama çok yoğun cisim de batar. Hacim değil, YOĞUNLUK karşılaştırması önemli.']
+  },
+  {
+    q:'Karim soruyor: ρ_sıvı 2 kat artarsa, Fk ne olur?',
+    opts:['2 kat artar — Fk = ρ_sıvı · V · g, doğrusal ilişki',
+          '4 kat artar — karesel ilişki',
+          'Değişmez — sıvı yoğunluğu Fk\'yı etkilemez',
+          'Yarıya düşer'],
+    ok:0,
+    good:'✓ Harika! Fk = ρ_sıvı · V · g — ρ_sıvı doğrudan çarpılır. 2x ρ = 2x Fk. Bu yüzden cıvada her şey yüzer!',
+    bads:['Doğrusal! Karesel değil. ρ 2x olursa Fk 2x olur.',
+          'Kesinlikle etkiler! Formüle bak: Fk = ρ_SIVI · V · g — ρ_sıvı formülün tam ortasında!',
+          'Tam tersi! ρ_sıvı artar → Fk artar.']
+  }
+];
+
+var KARIM_CORRECT = [
+  "Evet! Hesaplarım tutuyor! Gemi bu yükle güvende!",
+  "Bravo! Bunu bilmek benim için çok değerliydi!",
+  "Tam istediğim cevap! Gemim sağlam ellerde!",
+  "Fizik biliyor musun! Atina'ya ulaşacağız!"
+];
+
+var KARIM_WRONG = [
+  "Dur bir dakika! Bu hesapla gemi batabilir! Tekrar düşün!",
+  "Hayır hayır! Formüle bir daha bak! Gemimi batıramazsın!",
+  "Yanılıyorsun! Usta Karim senden daha iyi biliyor bunu!",
+  "Bu cevap doğru değil! Karim'in gemisi tehlikede!"
+];
+
+/* ══════════════════ STATE ══════════════════ */
+var phase=0, selObj=0, selLiq=0, vol=4;
+var starsEarned=0, qLocked=false, phaseQIdx=0, finalQIdx=0;
+var wrongCount=0;
+
+/* ══════════════════ LOGIN ══════════════════ */
+function tryLogin() {
+  var val = document.getElementById('pw-input').value.trim().toLowerCase();
+  if (val === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadProgress();
+    goPhase(starsEarned < 4 ? starsEarned : 3);
+  } else {
+    document.getElementById('pw-err').textContent = '✗ Yanlış şifre. Tekrar dene.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
+
+/* ══════════════════ PROGRESS ══════════════════ */
+function saveProgress() {
+  try {
+    var data = {stars:starsEarned, phase:phase};
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch(e){}
+}
+function loadProgress() {
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      var d = JSON.parse(raw);
+      starsEarned = d.stars || 0;
+      document.getElementById('save-status').textContent = starsEarned > 0 ? '✓ İlerleme yüklendi: '+starsEarned+' bölüm tamamlandı' : '';
+    }
+  } catch(e){}
+}
+
+/* ══════════════════ PHYSICS ══════════════════ */
+function getDLiq()  { return phase===2 ? LIQS[selLiq].d : 1000; }
+function getDObj()  { return phase===1 ? OBJS[selObj].d : phase===2 ? 800 : 800; }
+function getVol()   { return (phase===1||phase===2) ? 5 : vol; }
+function getFk()    { return (getDLiq()*getVol()*9.8/1000).toFixed(1); }
+function getW()     { return (getDObj()*getVol()*9.8/1000).toFixed(1); }
+function floats()   { return getDObj() <= getDLiq(); }
+function getSinkRatio() { return Math.min(getDObj()/getDLiq(),1); }
+
+/* ══════════════════ PHASE ══════════════════ */
+function goPhase(p) {
+  phase=p; selObj=0; selLiq=0; wrongCount=0;
+  if(p<3) vol=4;
+  qLocked=false; phaseQIdx=0; finalQIdx=0;
+
+  document.getElementById('st').textContent = STORIES[p];
+
+  var ss = SHIP_STATUS[p];
+  var sd = document.getElementById('story-ship');
+  sd.textContent = ss.msg;
+  sd.className = ss.ok ? 'ok' : '';
+
+  var pi = PHASE_INTROS[p];
+  document.getElementById('pi-title').textContent = pi.title;
+  document.getElementById('pi-text').textContent  = pi.text;
+  document.getElementById('pi-goal').textContent  = pi.goal;
+  document.getElementById('phase-intro').style.display = 'block';
+
+  hideKarim();
+
+  for(var i=0;i<4;i++){
+    var t=document.getElementById('t'+i);
+    t.className='tab'+(i===p?' active':(i<starsEarned?' done':''));
+  }
+
+  var pct = (starsEarned/4)*100;
+  document.getElementById('progress-bar').style.width = pct+'%';
+
+  document.getElementById('qpanel').style.display='none';
+  document.getElementById('nbtn').style.display='none';
+  document.getElementById('end-phase-btn').style.display='none';
+  document.getElementById('fin').style.display='none';
+
+  buildFormula();
+  buildCtrl();
+  updateResults();
+  draw();
+
+  if(p===3) showFinalQ();
+}
+
+/* ══════════════════ TABS ══════════════════ */
+document.getElementById('t0').onclick=function(){goPhase(0);};
+document.getElementById('t1').onclick=function(){goPhase(1);};
+document.getElementById('t2').onclick=function(){goPhase(2);};
+document.getElementById('t3').onclick=function(){goPhase(3);};
+
+/* ══════════════════ FORMULA ══════════════════ */
+function buildFormula() {
+  var dLiq=getDLiq(), v=getVol(), g=9.8;
+  var fk=getFk(), w=getW();
+
+  var html='';
+  if(phase===0){
+    html+='<div class="fv"><span class="fv-sym">ρ_sıvı</span><span class="fv-desc">= Sıvının yoğunluğu (sabit: tatlı su)</span><span class="fv-val">1000 kg/m³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">V_batan</span><span class="fv-desc">= Cismin suya DALAN hacmi (kaydırıcı ile değiştir)</span><span class="fv-val" id="fv-vol">'+v+' dm³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">g</span><span class="fv-desc">= Yerçekimi ivmesi (sabit)</span><span class="fv-val">9.8 m/s²</span></div>';
+    html+='<div class="fv" style="margin-top:4px;border-top:1px solid #e5e7eb;padding-top:4px"><span class="fv-sym" style="color:#059669">Fk</span><span class="fv-desc">= 1000 × '+v+' × 9.8 / 1000</span><span class="fv-val" style="color:#059669">= '+fk+' N</span></div>';
+    document.getElementById('fml-main').innerHTML = 'Fk = ρ_sıvı · <span style="color:#7c3aed;font-weight:bold">V_batan</span> · g';
+  }
+  if(phase===1){
+    html+='<div class="fv"><span class="fv-sym">ρ_sıvı</span><span class="fv-desc">= Sıvı yoğunluğu (sabit)</span><span class="fv-val">1000 kg/m³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">V_batan</span><span class="fv-desc">= Cismin suya dalan hacmi (sabit)</span><span class="fv-val">5 dm³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">ρ_cisim</span><span class="fv-desc">= Cismin yoğunluğu (sadece W\'yi etkiler!)</span><span class="fv-val" id="fv-dc">'+getDObj()+' kg/m³</span></div>';
+    html+='<div class="fv"><span class="fv-sym" style="color:#dc2626">W</span><span class="fv-desc">= ρ_cisim × V × g / 1000</span><span class="fv-val" style="color:#dc2626">= '+w+' N</span></div>';
+    html+='<div class="fv" style="margin-top:4px;border-top:1px solid #e5e7eb;padding-top:4px"><span class="fv-sym" style="color:#059669">Fk</span><span class="fv-desc">= ρ_SIVI × V × g (cisim değişse de sabit!)</span><span class="fv-val" style="color:#059669">= '+fk+' N</span></div>';
+    document.getElementById('fml-main').innerHTML = 'Fk = ρ_sıvı · V_batan · g  <span style="color:#dc2626;font-size:14px">(ρ_cisim → sadece W\'de!)</span>';
+  }
+  if(phase===2){
+    var dl=LIQS[selLiq].d;
+    html+='<div class="fv"><span class="fv-sym">ρ_sıvı</span><span class="fv-desc">= Seçilen sıvının yoğunluğu</span><span class="fv-val" id="fv-dl">'+dl+' kg/m³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">V_batan</span><span class="fv-desc">= Sabit hacim</span><span class="fv-val">5 dm³</span></div>';
+    html+='<div class="fv"><span class="fv-sym">g</span><span class="fv-desc">= Yerçekimi</span><span class="fv-val">9.8 m/s²</span></div>';
+    html+='<div class="fv" style="margin-top:4px;border-top:1px solid #e5e7eb;padding-top:4px"><span class="fv-sym" style="color:#059669">Fk</span><span class="fv-desc">= '+dl+' × 5 × 9.8 / 1000</span><span class="fv-val" style="color:#059669">= '+fk+' N</span></div>';
+    document.getElementById('fml-main').innerHTML = 'Fk = <span style="color:#7c3aed;font-weight:bold">ρ_sıvı</span> · V_batan · g';
+  }
+  if(phase===3){
+    document.getElementById('fml-main').innerHTML = 'Fk = ρ_sıvı · V_batan · g';
+    html='<div class="fv"><span class="fv-sym">ρ_sıvı</span><span class="fv-desc">Sıvının yoğunluğu — Fk\'yı doğrudan etkiler</span></div>';
+    html+='<div class="fv"><span class="fv-sym">V_batan</span><span class="fv-desc">Suya dalan hacim — Fk ile doğru orantılı</span></div>';
+    html+='<div class="fv"><span class="fv-sym">g</span><span class="fv-desc">Yerçekimi ivmesi = 9.8 m/s²</span></div>';
+    html+='<div class="fv"><span class="fv-sym">Yüzme koşulu</span><span class="fv-desc">ρ_cisim ≤ ρ_sıvı ise cisim YÜZER</span></div>';
+  }
+  document.getElementById('fml-vars').innerHTML=html;
+}
+
+/* ══════════════════ KARIM BUBBLE ══════════════════ */
+function showKarim(text) {
+  document.getElementById('karim-text').textContent = text;
+  document.getElementById('karim-bubble').style.display = 'block';
+}
+function hideKarim() {
+  document.getElementById('karim-bubble').style.display = 'none';
+}
+
+/* ══════════════════ CONTROLS ══════════════════ */
+function buildCtrl() {
+  var wrap=document.getElementById('ctrl');
+  wrap.innerHTML='';
+
+  if(phase===0){
+    var p=mkP('🔬 HACİM DENEYİ');
+    var sr=el('div','sr'); var sm=el('div','sm');
+    var lb=el('span','lb'); lb.textContent='Sandık Hacmi (V_batan)';
+    var vl=el('span','vl'); vl.id='vv'; vl.textContent=vol+' dm³';
+    sm.appendChild(lb); sm.appendChild(vl);
+    var sl=document.createElement('input'); sl.type='range'; sl.min=1; sl.max=12; sl.value=vol;
+    sl.oninput=function(){
+      vol=parseInt(this.value);
+      document.getElementById('vv').textContent=vol+' dm³';
+      var fv=document.getElementById('fv-vol');
+      if(fv) fv.textContent=vol+' dm³';
+      buildFormula(); updateResults(); draw();
+    };
+    sr.appendChild(sm); sr.appendChild(sl); p.appendChild(sr); wrap.appendChild(p);
+  }
+
+  if(phase===1){
+    var p=mkP('📦 CİSİM SEÇ — Yük Malzemesi');
+    var g=el('div','cg');
+    for(var i=0;i<OBJS.length;i++){
+      (function(idx){
+        var b=document.createElement('button');
+        b.className='cb'+(idx===selObj?' sel':'');
+        b.innerHTML='<span class="cn">'+OBJS[idx].name+'</span><span class="cv">'+OBJS[idx].d+' kg/m³  |  '+OBJS[idx].desc+'</span>';
+        b.onclick=function(){
+          selObj=idx;
+          g.querySelectorAll('.cb').forEach(function(x){x.classList.remove('sel');});
+          this.classList.add('sel');
+          buildFormula(); updateResults(); draw();
+        };
+        g.appendChild(b);
+      })(i);
+    }
+    p.appendChild(g); wrap.appendChild(p);
+  }
+
+  if(phase===2){
+    var p=mkP('🫙 SIVI SEÇ — Güzergah Suyu');
+    var g=el('div','cg');
+    for(var i=0;i<LIQS.length;i++){
+      (function(idx){
+        var b=document.createElement('button');
+        b.className='cb'+(idx===selLiq?' sel':'');
+        b.innerHTML='<span class="cn">'+LIQS[idx].name+'</span><span class="cv">'+LIQS[idx].d+' kg/m³  |  '+LIQS[idx].desc+'</span>';
+        b.onclick=function(){
+          selLiq=idx;
+          g.querySelectorAll('.cb').forEach(function(x){x.classList.remove('sel');});
+          this.classList.add('sel');
+          buildFormula(); updateResults(); draw();
+        };
+        g.appendChild(b);
+      })(i);
+    }
+    p.appendChild(g); wrap.appendChild(p);
+  }
+
+  if(phase<3){
+    var eb=document.getElementById('end-phase-btn');
+    eb.style.display='block';
+    eb.onclick=function(){
+      this.style.display='none';
+      showPhaseQ(phase);
+    };
+  }
+}
+
+function mkP(title){
+  var p=el('div','panel');
+  var t=el('div','ptitle'); t.textContent=title;
+  p.appendChild(t); return p;
+}
+function el(tag,cls){ var e=document.createElement(tag); e.className=cls; return e; }
+
+/* ══════════════════ RESULTS ══════════════════ */
+function updateResults(){
+  if(phase===3){
+    document.getElementById('rW').textContent='—';
+    document.getElementById('rFk').textContent='—';
+    document.getElementById('rSt').innerHTML='—';
+    document.getElementById('vd').textContent='';
+    return;
+  }
+  var fk=getFk(), w=getW(), fl=floats();
+  document.getElementById('rW').textContent=w+' N';
+  document.getElementById('rFk').textContent=fk+' N';
+  document.getElementById('rSt').innerHTML=fl
+    ?'<span style="color:#059669">🟢 YÜZER</span>'
+    :'<span style="color:#dc2626">🔴 BATAR</span>';
+  var vd=document.getElementById('vd');
+  vd.style.color=fl?'#059669':'#dc2626';
+  vd.textContent=fl?'↑  Fk > W  →  YÜZER!':'↓  W > Fk  →  BATAR!';
+}
+
+/* ══════════════════ PHASE QUIZ ══════════════════ */
+function showPhaseQ(p){
+  var q=PHASE_Q[p];
+  var qp=document.getElementById('qpanel'); qp.style.display='block';
+  qLocked=false; wrongCount=0;
+  document.getElementById('qq').textContent=q.q;
+  document.getElementById('qfb').textContent=''; document.getElementById('qfb').className='';
+  document.getElementById('nbtn').style.display='none';
+  var wrap=document.getElementById('qopts'); wrap.innerHTML='';
+  for(var i=0;i<q.opts.length;i++){
+    (function(idx){
+      var b=document.createElement('button'); b.className='qo';
+      b.textContent=String.fromCharCode(65+idx)+')  '+q.opts[idx];
+      b.onclick=function(){
+        if(qLocked) return;
+        var all=wrap.querySelectorAll('.qo');
+        if(idx===q.ok){
+          qLocked=true;
+          all.forEach(function(x){x.disabled=true;});
+          this.classList.add('ok');
+          var fb=document.getElementById('qfb');
+          fb.textContent=q.good; fb.className='good';
+          showKarim(KARIM_CORRECT[Math.floor(Math.random()*KARIM_CORRECT.length)]);
+          earnStar(p);
+          var nb=document.getElementById('nbtn');
+          nb.textContent=p<2?'⚓ SONRAKİ GÖREV ›':'🎓 SINAVA GEÇ ›';
+          nb.style.display='block';
+          nb.onclick=function(){goPhase(p+1);};
+        } else {
+          wrongCount++;
+          this.classList.add('no');
+          setTimeout(function(){ b.classList.remove('no'); b.disabled=false; },1200);
+          var badIdx=idx>q.ok?idx-1:idx; if(badIdx>=q.bads.length)badIdx=0;
+          // find which bad message
+          var badMsg='';
+          var wrongIdx=0;
+          for(var j=0;j<q.opts.length;j++){ if(j!==q.ok){ if(j===idx){badMsg=q.bads[wrongIdx]; break;} wrongIdx++; } }
+          if(!badMsg) badMsg=q.bads[0];
+          var fb=document.getElementById('qfb');
+          fb.innerHTML='✗ <strong>Seçtiğin cevap yanlış:</strong> "'+q.opts[idx]+'"<br>Neden değil: '+badMsg;
+          fb.className='bad';
+          showKarim(KARIM_WRONG[Math.floor(Math.random()*KARIM_WRONG.length)]);
+        }
+      };
+      wrap.appendChild(b);
+    })(i);
+  }
+  qp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ══════════════════ FINAL QUIZ ══════════════════ */
+function showFinalQ(){
+  if(finalQIdx>=FINAL_Q.length){ earnStar(3); showComplete(); return; }
+  var q=FINAL_Q[finalQIdx];
+  var qp=document.getElementById('qpanel'); qp.style.display='block';
+  qLocked=false;
+  document.getElementById('qq').innerHTML='<span style="font-size:14px;color:#6d28d9">('+( finalQIdx+1)+'/'+FINAL_Q.length+')</span>  '+q.q.replace(/\n/g,'<br>');
+  document.getElementById('qfb').textContent=''; document.getElementById('qfb').className='';
+  document.getElementById('nbtn').style.display='none';
+  var wrap=document.getElementById('qopts'); wrap.innerHTML='';
+  for(var i=0;i<q.opts.length;i++){
+    (function(idx){
+      var b=document.createElement('button'); b.className='qo';
+      b.textContent=String.fromCharCode(65+idx)+')  '+q.opts[idx];
+      b.onclick=function(){
+        if(qLocked) return;
+        if(idx===q.ok){
+          qLocked=true;
+          wrap.querySelectorAll('.qo').forEach(function(x){x.disabled=true;});
+          this.classList.add('ok');
+          document.getElementById('qfb').textContent=q.good;
+          document.getElementById('qfb').className='good';
+          showKarim(KARIM_CORRECT[Math.floor(Math.random()*KARIM_CORRECT.length)]);
+          finalQIdx++;
+          var nb=document.getElementById('nbtn');
+          nb.style.display='block';
+          if(finalQIdx<FINAL_Q.length){
+            nb.textContent='SONRAKİ SORU ›';
+            nb.onclick=function(){showFinalQ();};
+          } else {
+            nb.textContent='🏺 GEMİYİ KURTAR!';
+            nb.onclick=showComplete;
+          }
+        } else {
+          this.classList.add('no');
+          setTimeout(function(){ b.classList.remove('no'); },1200);
+          // find bad message
+          var wrongIdx=0, badMsg=q.bads[0];
+          for(var j=0;j<q.opts.length;j++){ if(j!==q.ok){ if(j===idx){badMsg=q.bads[wrongIdx]; break;} wrongIdx++; } }
+          document.getElementById('qfb').innerHTML='✗ <strong>Seçtiğin cevap yanlış:</strong> "'+q.opts[idx]+'"<br>Neden değil: '+badMsg;
+          document.getElementById('qfb').className='bad';
+          showKarim(KARIM_WRONG[Math.floor(Math.random()*KARIM_WRONG.length)]);
+        }
+      };
+      wrap.appendChild(b);
+    })(i);
+  }
+}
+
+function earnStar(p){
+  if(starsEarned<=p) starsEarned=p+1;
+  document.getElementById('s'+p).classList.add('lit');
+  var pct=(starsEarned/4)*100;
+  document.getElementById('progress-bar').style.width=pct+'%';
+  saveProgress();
+}
+
+function showComplete(){
+  earnStar(3);
+  var ss=document.getElementById('story-ship');
+  ss.textContent='🚢 GEMİ KURTULDU! Usta Karim\'in gemisi Atina\'ya ulaşacak!';
+  ss.className='ok';
+  document.getElementById('fin').style.display='block';
+  document.getElementById('fin').scrollIntoView({behavior:'smooth'});
+  saveProgress();
+}
+
+function replay(){
+  starsEarned=0;
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  document.getElementById('stars').querySelectorAll('.star').forEach(function(s){ s.classList.remove('lit'); });
+  goPhase(0);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════ CANVAS ══════════════════ */
+var canvas=document.getElementById('c');
+var cx=canvas.getContext('2d');
+var CW=672, CH=290;
+
+function draw(){
+  cx.clearRect(0,0,CW,CH);
+  // sky gradient
+  var sk=cx.createLinearGradient(0,0,0,CH);
+  sk.addColorStop(0,'#bae6fd'); sk.addColorStop(1,'#e0f2fe');
+  cx.fillStyle=sk; cx.fillRect(0,0,CW,CH);
+  drawGrid();
+  var tx=50,tw=400,ty=18,th=238;
+  var lt=ty+32, lh=th-40, fy=ty+th-10;
+  drawTank(tx,ty,tw,th,lt,lh,fy);
+  drawObj(tx,tw,lt,lh,fy);
+  drawUsta(CW-155,14);
+  drawInfoText(tx,ty+th+14);
+}
+
+function drawGrid(){
+  cx.strokeStyle='rgba(139,92,246,.07)'; cx.lineWidth=1;
+  for(var x=0;x<CW;x+=20){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,CH);cx.stroke();}
+  for(var y=0;y<CH;y+=20){cx.beginPath();cx.moveTo(0,y);cx.lineTo(CW,y);cx.stroke();}
+}
+
+function drawTank(tx,ty,tw,th,lt,lh,fy){
+  // tank bg
+  cx.fillStyle='rgba(255,255,255,.5)'; cx.fillRect(tx,ty,tw,th);
+  // liquid
+  var lc='#60a5fa', la=.55;
+  if(phase===2){lc=LIQS[selLiq].col; la=LIQS[selLiq].a;}
+  cx.save(); cx.globalAlpha=la; cx.fillStyle=lc; cx.fillRect(tx+3,lt,tw-6,lh); cx.restore();
+  // shimmer
+  cx.fillStyle='rgba(255,255,255,.3)';
+  for(var x=tx+6;x<tx+tw-6;x+=12) cx.fillRect(x,lt,6,2);
+  // walls
+  cx.strokeStyle='#7c3aed'; cx.lineWidth=3; cx.strokeRect(tx,ty,tw,th);
+  // floor
+  cx.fillStyle='#4c1d95'; cx.fillRect(tx,ty+th-8,tw,8);
+  // liquid label
+  cx.fillStyle='rgba(109,40,217,.6)'; cx.font='8px "Press Start 2P"';
+  var liqName = phase===2 ? LIQS[selLiq].name.replace(/[^\w ]/g,'').trim() : 'Tatlı Su';
+  cx.fillText(liqName, tx+8, lt+20);
+}
+
+function drawObj(tx,tw,lt,lh,fy){
+  var v=getVol();
+  var sz=Math.min(18+v*7,118);
+  var fl=floats(), sr=getSinkRatio();
+  var objY;
+  if(fl){ objY=lt-sz+sz*sr; }
+  else   { objY=fy-sz; }
+  var objX=tx+tw/2-sz/2;
+  var col='#7a5010';
+  if(phase===1) col=OBJS[selObj].col;
+  drawBlock(objX,objY,sz,col);
+  if(!fl){
+    cx.fillStyle='rgba(100,180,255,.6)';
+    for(var b=0;b<4;b++){cx.beginPath();cx.arc(objX+sz/2+(b-1.5)*12,objY-5-b*7,2+b*.8,0,Math.PI*2);cx.fill();}
+  }
+  // dashed waterline on object
+  if(fl && sr>0 && sr<1){
+    cx.save(); cx.strokeStyle='rgba(220,38,38,.7)'; cx.lineWidth=1.5;
+    cx.setLineDash([3,3]);
+    cx.beginPath(); cx.moveTo(objX-4,lt); cx.lineTo(objX+sz+4,lt); cx.stroke();
+    cx.restore();
+    // label V_batan
+    cx.fillStyle='#dc2626'; cx.font='7px "Press Start 2P"';
+    cx.fillText('V_batan',objX+sz+6,lt+4);
+  }
+  var mx=objX+sz/2;
+  var fkL=Math.min(parseFloat(getFk())*1.2,75);
+  var wL =Math.min(parseFloat(getW())*1.2,75);
+  arrow(mx,objY,mx,objY-fkL,'#059669');
+  cx.fillStyle='#059669'; cx.font='bold 9px "Press Start 2P"'; cx.fillText('Fk',mx+5,objY-fkL/2-2);
+  arrow(mx,objY+sz,mx,objY+sz+wL,'#dc2626');
+  cx.fillStyle='#dc2626'; cx.font='bold 9px "Press Start 2P"'; cx.fillText('W',mx+5,objY+sz+wL/2+10);
+}
+
+function drawBlock(x,y,s,col){
+  cx.fillStyle=col; cx.fillRect(x,y,s,s);
+  var px=Math.max(3,Math.floor(s/14))*2;
+  try{
+    cx.fillStyle=lighten(col,55);
+    for(var i=0;i<s;i+=px*2){cx.fillRect(x+i,y,px,px);cx.fillRect(x,y+i,px,px);}
+    cx.fillStyle=darken(col,40);
+    for(var i=0;i<s;i+=px*2){cx.fillRect(x+i,y+s-px,px,px);cx.fillRect(x+s-px,y+i,px,px);}
+  }catch(e){}
+  cx.strokeStyle='rgba(0,0,0,.4)'; cx.lineWidth=2; cx.strokeRect(x,y,s,s);
+}
+
+function arrow(x1,y1,x2,y2,col){
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<4) return;
+  cx.strokeStyle=col; cx.lineWidth=2.5; cx.fillStyle=col;
+  cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+  var ux=dx/len,uy=dy/len;
+  cx.beginPath(); cx.moveTo(x2,y2);
+  cx.lineTo(x2-ux*8+uy*5,y2-uy*8-ux*5);
+  cx.lineTo(x2-ux*8-uy*5,y2-uy*8+ux*5);
+  cx.closePath(); cx.fill();
+}
+
+function drawInfoText(tx,y){
+  if(phase===3) return;
+  cx.font='7px "Press Start 2P"'; cx.fillStyle='rgba(109,40,217,.65)';
+  cx.fillText('ρ_sıvı = '+getDLiq()+' kg/m³', tx+4, y+13);
+  cx.fillText('V = '+getVol()+' dm³  |  ρ_cisim = '+getDObj()+' kg/m³', tx+4, y+26);
+}
+
+function drawUsta(x,y){
+  var p=10;
+  // shadow
+  cx.fillStyle='rgba(0,0,0,.1)'; cx.fillRect(x-2,y+3*p+2,4*p+4,4);
+  // legs
+  cx.fillStyle='#1e1b4b'; cx.fillRect(x+2,y+3*p,p,p+2); cx.fillRect(x+2*p,y+3*p,p,p+2);
+  // robe
+  cx.fillStyle='#4c1d95'; cx.fillRect(x,y,3*p+4,3*p+2);
+  // robe highlight
+  cx.fillStyle='#6d28d9'; cx.fillRect(x+2,y+2,p,p*2);
+  // arms
+  cx.fillStyle='#e8c090'; cx.fillRect(x-p+2,y+p,p-2,7); cx.fillRect(x+3*p+2,y+p,p-2,7);
+  // hands
+  cx.fillStyle='#c97b3a'; cx.fillRect(x-p+2,y+p+5,5,5); cx.fillRect(x+3*p+2,y+p+5,5,5);
+  // neck
+  cx.fillStyle='#e8c090'; cx.fillRect(x+p,y-3,p+4,5);
+  // head
+  cx.fillStyle='#e8c090'; cx.fillRect(x+p-1,y-2*p,p+2,p+2);
+  // eyes
+  cx.fillStyle='#1e1b4b'; cx.fillRect(x+p,y-2*p+3,3,3); cx.fillRect(x+p+6,y-2*p+3,3,3);
+  // mouth
+  cx.fillStyle='#8b4513'; cx.fillRect(x+p+1,y-2*p+7,8,2);
+  // beard
+  cx.fillStyle='#d4a040'; cx.fillRect(x+p-2,y-p+4,p+6,5);
+  // hat
+  cx.fillStyle='#7c3aed'; cx.fillRect(x+p-4,y-3*p-2,p+8,4);
+  cx.fillStyle='#4c1d95'; cx.fillRect(x+p-1,y-4*p+2,p+2,p);
+  // staff
+  cx.fillStyle='#8b6914'; cx.fillRect(x-p+4,y-4*p,2,5*p+6);
+  cx.fillStyle='#d97706'; cx.fillRect(x-p+2,y-4*p,6,3);
+  // label
+  cx.font='6px "Press Start 2P"'; cx.fillStyle='#4c1d95';
+  cx.fillText('USTA',x-2,y+4*p+14); cx.fillText('KARİM',x-5,y+4*p+25);
+}
+
+function lighten(h,a){try{var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return'rgb('+Math.min(255,r+a)+','+Math.min(255,g+a)+','+Math.min(255,b+a)+')';}catch(e){return'#fff';}}
+function darken(h,a){try{var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return'rgb('+Math.max(0,r-a)+','+Math.max(0,g-a)+','+Math.max(0,b-a)+')';}catch(e){return'#000';}}
+
+// boot
+goPhase(0);
+</script>
+</body>
+</html>
